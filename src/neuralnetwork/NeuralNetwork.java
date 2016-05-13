@@ -168,6 +168,29 @@ public class NeuralNetwork {
             layers.get(i).setBias(biases.get(i));
     }
 
+    public void addLayer(Layer layer) {
+        if (layer == null) {
+            throw new NullPointerException("NeuralNetwork: layer can't be null");
+        }
+
+        Layer previousLayer = layers.get(layers.size() - 1);
+        previousLayer.setAsHiddenLayer();
+
+        layer.setAsOutputLayer();
+
+        layers.add(layer);
+    }
+
+    public void addLayer(int numberOfNeurons) {
+        Layer previousLayer = layers.get(layers.size() - 1);
+        previousLayer.setAsHiddenLayer();
+
+        Layer newLayer = new Layer(numberOfNeurons, previousLayer.size());
+        newLayer.setAsOutputLayer();
+
+        layers.add(newLayer);
+    }
+
     public void setBias(double bias, int layer) {
         layers.get(layer).setBias(bias);
     }

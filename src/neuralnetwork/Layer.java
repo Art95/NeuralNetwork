@@ -48,8 +48,14 @@ public class Layer {
         this.isOutputLayer = true;
     }
 
+    public void setAsHiddenLayer() { this.isOutputLayer = false; }
+
     public List<Double> getOutput() {
         return this.output;
+    }
+
+    public int size() {
+        return this.neurons.size();
     }
 
     public void backPropagateOutputLayer(List<Double> networkAnswer, List<Double> correctAnswer, double alpha) {
