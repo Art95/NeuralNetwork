@@ -1,10 +1,10 @@
 package neuralnetwork;
 
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.io.*;
+import java.util.*;
 
 /**
  * Created by Artem on 11.05.2016.
@@ -13,8 +13,13 @@ public class NeuralNetwork {
     private List<Layer> layers;
     private List<Double> output;
 
-    private final static int NUMBER_OF_EPOCHS = 500000;
+    private final static int NUMBER_OF_EPOCHS = 10000;
     private final static double ERROR_TOLERANCE = 0.01;
+
+    public NeuralNetwork() {
+        layers = new ArrayList<>();
+        output = new ArrayList<>();
+    }
 
     public NeuralNetwork(List<Integer> neuronsInLayers) {
         if (neuronsInLayers.size() < 2) {
@@ -173,8 +178,10 @@ public class NeuralNetwork {
             throw new NullPointerException("NeuralNetwork: layer can't be null");
         }
 
-        Layer previousLayer = layers.get(layers.size() - 1);
-        previousLayer.setAsHiddenLayer();
+        if (layers.size() > 1) {
+            Layer previousLayer = layers.get(layers.size() - 1);
+            previousLayer.setAsHiddenLayer();
+        }
 
         layer.setAsOutputLayer();
 
@@ -195,12 +202,98 @@ public class NeuralNetwork {
         layers.get(layer).setBias(bias);
     }
 
-    public void loadNetwork(String fileAddress) {
-        throw new NotImplementedException();
+    public int size() {
+        return this.layers.size();
     }
 
-    public void saveNetwork(String fileAddress) {
-        throw new NotImplementedException();
+    public static NeuralNetwork loadNetwork(String fileAddress) throws IOException {
+        File file = new File(fileAddress);
+        InputStream inp = new FileInputStream(file);
+        Scanner scanner = new Scanner(inp);
+
+        NeuralNetwork neuralNetwork = new NeuralNetwork();
+
+        int numberOfLayers;
+        List<Integer> neuronsInLayers = new ArrayList<>();
+
+        if (!scanner.hasNextLine()) {
+            throw new IOException("NeuralNetwork: file is empty");
+        } else {
+            String line = scanner.nextLine();
+            numberOfLayers = Integer.parseInt(line.trim());
+        }
+
+        if (!scanner.hasNextLine()) {
+            throw new IOException("NeuralNetwork: data is missed. Should contain numbers of neurons in each layer");
+        } else {
+            String[] neuronsNumbers = scanner.nextLine().split(" ");
+
+            for (String numberOfNeurons : neuronsNumbers) {
+                neuronsInLayers.add(Integer.parseInt(numberOfNeurons.trim()));
+            }
+        }
+
+        int layerIndex = 1;
+        StringBuilder sLayer = new StringBuilder();
+
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+
+            if (line.equals("#")) {
+
+                if (sLayer.length() != 0) {
+                    Layer newLayer = Layer.parseLayer(sLayer.toString());
+
+                    if (newLayer.size() != neuronsInLayers.get(layerIndex)) {
+                        throw new IOException("NeuralNetwork: inconveniences in file data.");
+                    }
+
+                    neuralNetwork.addLayer(newLayer);
+                    ++layerIndex;
+                }
+
+                sLayer = new StringBuilder();
+            } else {
+                sLayer.append(line + "\n");
+            }
+        }
+
+        if (sLayer.length() > 0) {
+            Layer newLayer = Layer.parseLayer(sLayer.toString());
+
+            if (newLayer.size() != neuronsInLayers.get(layerIndex)) {
+                throw new IOException("NeuralNetwork: inconveniences in file data.");
+            }
+
+            neuralNetwork.addLayer(newLayer);
+        }
+
+        if (neuralNetwork.size() + 1 != numberOfLayers) {
+            throw new IOException("NeuralNetwork: inconveniences in file data.");
+        }
+
+        return neuralNetwork;
+    }
+
+    public void saveNetwork(String fileAddress) throws IOException {
+        Writer writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(fileAddress), "utf-8"));
+
+        writer.write((layers.size() + 1) + "\n");
+
+        Integer inputLayerSize = layers.get(0).inputSize();
+        writer.write(inputLayerSize.toString());
+
+        for (Layer layer : layers) {
+            writer.write(" " + layer.size());
+        }
+
+        for (Layer layer : layers) {
+            writer.write("\n#\n");
+            writer.write(layer.toString());
+        }
+
+        writer.close();
     }
 
     @Override

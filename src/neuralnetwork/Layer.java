@@ -30,6 +30,18 @@ public class Layer {
         isOutputLayer = false;
     }
 
+    public Layer(List<Neuron> neurons) {
+        if (neurons.isEmpty()) {
+            throw new IllegalArgumentException("Layer: layer can't have zero neurons");
+        }
+
+        this.neurons = neurons;
+        this.output = new ArrayList<>();
+        this.sigmas = new ArrayList<>();
+
+        isOutputLayer = false;
+    }
+
     public List<Double> feedForward(List<Double> inputs) {
         if (inputs == null)
             throw new NullPointerException("Layer: inputs can't be null");
@@ -56,6 +68,10 @@ public class Layer {
 
     public int size() {
         return this.neurons.size();
+    }
+
+    public Integer inputSize() {
+        return neurons.get(0).getWeights().size();
     }
 
     public void backPropagateOutputLayer(List<Double> networkAnswer, List<Double> correctAnswer, double alpha) {
@@ -138,14 +154,32 @@ public class Layer {
         return this.sigmas;
     }
 
+    public static Layer parseLayer(String s) {
+        String[] sNeurons = s.split("\n");
+
+        if (sNeurons.length == 0) {
+            throw new IllegalArgumentException("Layer: layer can't have zero weights");
+        }
+
+        List<Neuron> neurons = new ArrayList<>(sNeurons.length);
+
+        for (String sNeuron : sNeurons) {
+            Neuron neuron = Neuron.parseNeuron(sNeuron.trim());
+            neurons.add(neuron);
+        }
+
+        return new Layer(neurons);
+    }
+
     @Override
     public String toString() {
         StringBuilder text = new StringBuilder();
 
-        text.append("Layer:\n");
+        for (int i = 0; i < neurons.size(); ++i) {
+            text.append(neurons.get(i).toString());
 
-        for (Neuron neuron : neurons) {
-            text.append(neuron.toString() + '\n');
+            if (i < neurons.size() - 1)
+                text.append("\n");
         }
 
         return text.toString();

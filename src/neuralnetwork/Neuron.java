@@ -1,6 +1,7 @@
 package neuralnetwork;
 
 import java.util.ArrayList;
+import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Random;
 
@@ -137,18 +138,34 @@ public class Neuron {
         this.bias = bias;
     }
 
+    public static Neuron parseNeuron(String s) {
+        String[] sWeights = s.split(" ");
+
+        if (sWeights.length == 0) {
+            throw new IllegalArgumentException("Neuron: neuron can't have zero weights");
+        }
+
+        List<Double> weights = new ArrayList<>(sWeights.length - 1);
+
+        for (int i = 0; i < sWeights.length - 1; ++i) {
+            Double weight = Double.parseDouble(sWeights[i].trim());
+            weights.add(weight);
+        }
+
+        double bias = Double.parseDouble(sWeights[sWeights.length - 1]);
+
+        return new Neuron(weights, bias);
+    }
+
     @Override
     public String toString() {
         StringBuilder text = new StringBuilder();
-
-        text.append("[");
 
         for (Double weight : weights) {
             text.append(weight + " ");
         }
 
         text.append(bias);
-        text.append("]");
 
         return text.toString();
     }
