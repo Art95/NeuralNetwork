@@ -195,6 +195,13 @@ public class NeuralNetwork {
         layers.add(newLayer);
     }
 
+    public void setBias(int layerIndex, int neuronIndex, double bias) {
+        if (layerIndex < 0 || layerIndex >= layers.size())
+            throw new IllegalArgumentException("NeuralNetwork: index of layer is out of range");
+
+        layers.get(layerIndex).setBias(neuronIndex, bias);
+    }
+
     public void setBiases(int layerIndex, List<Double> biases) {
         if (layerIndex < 0 || layerIndex >= layers.size())
             throw new IllegalArgumentException("NeuralNetwork: index of layer is out of range");
