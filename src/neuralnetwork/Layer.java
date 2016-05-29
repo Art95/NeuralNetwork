@@ -144,14 +144,45 @@ public class Layer {
         }
     }
 
-    public void setBias(double bias) {
-        for (Neuron neuron : neurons) {
-            neuron.setBias(bias);
+    public void setBias(int neuronIndex, double bias) {
+        if (neuronIndex < 0 || neuronIndex >= neurons.size())
+            throw new IllegalArgumentException("Layer: neuronIndex is out of range");
+
+        neurons.get(neuronIndex).setBias(bias);
+    }
+
+    public void setBiases(List<Double> biases) {
+        if (biases == null)
+            throw new NullPointerException("Layer: biases can't be null");
+
+        if (neurons.size() != biases.size())
+            throw new IllegalArgumentException("Layer: size of biases should be equal to number of neurons");
+
+        for (int i = 0; i < neurons.size(); ++i) {
+            neurons.get(i).setBias(biases.get(i));
         }
     }
 
     public List<Double> getSigmas() {
         return this.sigmas;
+    }
+
+    public List<Double> getBiases() {
+        List<Double> biases = new ArrayList<>();
+
+        for (Neuron neuron : neurons) {
+            biases.add(neuron.getBias());
+        }
+
+        return biases;
+    }
+
+    public double getBias(int neuronIndex) {
+        if (neuronIndex < 0 || neuronIndex >= neurons.size()) {
+            throw new IllegalArgumentException("Layer: neuron index is out of range");
+        }
+
+        return neurons.get(neuronIndex).getBias();
     }
 
     public static Layer parseLayer(String s) {

@@ -138,6 +138,10 @@ public class Neuron {
         this.bias = bias;
     }
 
+    public double getBias() {
+        return this.bias;
+    }
+
     public static Neuron parseNeuron(String s) {
         String[] sWeights = s.split(" ");
 

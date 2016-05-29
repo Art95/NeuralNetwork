@@ -1,8 +1,5 @@
 package neuralnetwork;
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import java.io.*;
 import java.util.*;
 
@@ -162,7 +159,7 @@ public class NeuralNetwork {
         layers.get(layer).setWeights(weights);
     }
 
-    public void setBiases(List<Double> biases) {
+    public void setBiases(List<List<Double>> biases) {
         if (biases == null)
             throw new NullPointerException("NeuralNetwork: biases can't be null");
 
@@ -170,7 +167,7 @@ public class NeuralNetwork {
             throw new IllegalArgumentException("NeuralNetwork: biases size should be equal number of layers");
 
         for (int i = 0; i < layers.size(); ++i)
-            layers.get(i).setBias(biases.get(i));
+            layers.get(i).setBiases(biases.get(i));
     }
 
     public void addLayer(Layer layer) {
@@ -198,8 +195,25 @@ public class NeuralNetwork {
         layers.add(newLayer);
     }
 
-    public void setBias(double bias, int layer) {
-        layers.get(layer).setBias(bias);
+    public void setBiases(int layerIndex, List<Double> biases) {
+        if (layerIndex < 0 || layerIndex >= layers.size())
+            throw new IllegalArgumentException("NeuralNetwork: index of layer is out of range");
+
+        layers.get(layerIndex).setBiases(biases);
+    }
+
+    public List<Double> getBiases(int layerIndex) {
+        if (layerIndex < 0 || layerIndex >= layers.size())
+            throw new IllegalArgumentException("NeuralNetwork: index of layer is out of range");
+
+        return layers.get(layerIndex).getBiases();
+    }
+
+    public double getBias(int layerIndex, int neuronIndex) {
+        if (layerIndex < 0 || layerIndex >= layers.size())
+            throw new IllegalArgumentException("NeuralNetwork: index of layer is out of range");
+
+        return layers.get(layerIndex).getBias(neuronIndex);
     }
 
     public int size() {
