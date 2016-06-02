@@ -1,6 +1,8 @@
 package neuralnetwork;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -228,69 +230,17 @@ public class NeuralNetwork {
     }
 
     public static NeuralNetwork loadNetwork(String fileAddress) throws IOException {
-        File file = new File(fileAddress);
-        InputStream inp = new FileInputStream(file);
-        Scanner scanner = new Scanner(inp);
+        byte[] encoded = Files.readAllBytes(Paths.get(fileAddress));
+        String text =  new String(encoded, "utf-8");
 
         NeuralNetwork neuralNetwork = new NeuralNetwork();
 
-        int numberOfLayers;
-        List<Integer> neuronsInLayers = new ArrayList<>();
+        String[] sLayers = text.split("#");
 
-        if (!scanner.hasNextLine()) {
-            throw new IOException("NeuralNetwork: file is empty");
-        } else {
-            String line = scanner.nextLine();
-            numberOfLayers = Integer.parseInt(line.trim());
-        }
-
-        if (!scanner.hasNextLine()) {
-            throw new IOException("NeuralNetwork: data is missed. Should contain numbers of neurons in each layer");
-        } else {
-            String[] neuronsNumbers = scanner.nextLine().split(" ");
-
-            for (String numberOfNeurons : neuronsNumbers) {
-                neuronsInLayers.add(Integer.parseInt(numberOfNeurons.trim()));
+        for (String sLayer : sLayers) {
+            if (!sLayer.trim().isEmpty()) {
+                neuralNetwork.addLayer(Layer.parseLayer(sLayer.trim()));
             }
-        }
-
-        int layerIndex = 1;
-        StringBuilder sLayer = new StringBuilder();
-
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-
-            if (line.equals("#")) {
-
-                if (sLayer.length() != 0) {
-                    Layer newLayer = Layer.parseLayer(sLayer.toString());
-
-                    if (newLayer.size() != neuronsInLayers.get(layerIndex)) {
-                        throw new IOException("NeuralNetwork: inconveniences in file data.");
-                    }
-
-                    neuralNetwork.addLayer(newLayer);
-                    ++layerIndex;
-                }
-
-                sLayer = new StringBuilder();
-            } else {
-                sLayer.append(line + "\n");
-            }
-        }
-
-        if (sLayer.length() > 0) {
-            Layer newLayer = Layer.parseLayer(sLayer.toString());
-
-            if (newLayer.size() != neuronsInLayers.get(layerIndex)) {
-                throw new IOException("NeuralNetwork: inconveniences in file data.");
-            }
-
-            neuralNetwork.addLayer(newLayer);
-        }
-
-        if (neuralNetwork.size() + 1 != numberOfLayers) {
-            throw new IOException("NeuralNetwork: inconveniences in file data.");
         }
 
         return neuralNetwork;
@@ -300,18 +250,9 @@ public class NeuralNetwork {
         Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(fileAddress), "utf-8"));
 
-        writer.write((layers.size() + 1) + "\n");
-
-        Integer inputLayerSize = layers.get(0).inputSize();
-        writer.write(inputLayerSize.toString());
-
         for (Layer layer : layers) {
-            writer.write(" " + layer.size());
-        }
-
-        for (Layer layer : layers) {
-            writer.write("\n#\n");
             writer.write(layer.toString());
+            writer.write("\n#\n");
         }
 
         writer.close();
